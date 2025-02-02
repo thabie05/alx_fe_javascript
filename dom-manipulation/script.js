@@ -160,10 +160,42 @@ async function syncWithServer() {
 }
 
 // Create a manual sync button to trigger server synchronization
+async function syncQuotes() {
+    try {
+        const serverQuotes = await fetchQuotesFromServer();
+
+        serverQuotes.forEach(sq => {
+            const existingQuoteIndex = quotes.findIndex(q => q.text === sq.text);
+
+            if (existingQuoteIndex === -1) {
+                // New quote: Add it
+                quotes.push(sq);
+            } else {
+                // Existing quote: Update it (if necessary)
+                const existingQuote = quotes[existingQuoteIndex];
+                if (existingQuote.category !== sq.category) {  // Example: Update category
+                    quotes[existingQuoteIndex] = sq; // Update the existing quote with the one from the server.
+                }
+            }
+        });
+
+        saveQuotes();
+        populateCategories();
+        filterQuotes();
+        alert('Quotes synced with server!');
+    } catch (error) {
+        console.error("Error syncing quotes:", error);
+        alert('Sync failed. Check the console for errors.');
+    }
+}
+
+
+
+// Create a manual sync button to trigger server synchronization
 function createSyncButton() {
     const btn = document.createElement('button');
     btn.textContent = 'Sync Now';
-    btn.onclick = syncWithServer;
+    btn.onclick = syncQuotes;  // Use syncQuotes function
     document.body.appendChild(btn);
 }
 
