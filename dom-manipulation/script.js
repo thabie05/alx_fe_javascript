@@ -145,37 +145,57 @@ async function fetchQuotesFromServer() {
 
 
 // Sync quotes with the server, adding any new ones
-async function fetchQuotesFromServer() {
+async function syncWithServer() {
+    const serverQuotes = await fetchQuotesFromServer();
+
+    serverQuotes.forEach(sq => {
+        if (!quotes.some(q => q.text === sq.text)) {
+            quotes.push(sq);
+        }
+    });
+    saveQuotes();
+    populateCategories();
+    filterQuotes();
+    alert('Synced with server! New quotes added.');
+}
+
+// Create a manual sync button to trigger server synchronization
+async function syncQuotes() {
     try {
-        const res = await fetch('https://jsonplaceholder.typicode.com/posts', {
-            method: 'POST', // Changed to POST
-            headers: {
-                'Content-Type': 'application/json' // Added Content-Type header
-            },
-            // If you're sending data in the body of the POST request, include it here:
-            // body: JSON.stringify({ /* Your data here */ }) 
+        const serverQuotes = await fetchQuotesFromServer();
+
+        serverQuotes.forEach(sq => {
+            const existingQuoteIndex = quotes.findIndex(q => q.text === sq.text);
+
+            if (existingQuoteIndex === -1) {
+                // New quote: Add it
+                quotes.push(sq);
+            } else {
+                // Existing quote: Update it (if necessary)
+                const existingQuote = quotes[existingQuoteIndex];
+                if (existingQuote.category !== sq.category) {  // Example: Update category
+                    quotes[existingQuoteIndex] = sq; // Update the existing quote with the one from the server.
+                }
+            }
         });
 
-        if (!res.ok) {
-            throw new Error(`HTTP error! status: ${res.status}`);
-        }
-
-        const posts = await res.json();
-        return posts.map(post => ({
-            text: post.title,
-            category: 'server'
-        }));
+        saveQuotes();
+        populateCategories();
+        filterQuotes();
+        alert('Quotes synced with server!');
     } catch (error) {
-        console.error('Error fetching/sending quotes:', error);
-        return [];
+        console.error("Error syncing quotes:", error);
+        alert('Sync failed. Check the console for errors.');
     }
 }
+
+
 
 // Create a manual sync button to trigger server synchronization
 function createSyncButton() {
     const btn = document.createElement('button');
     btn.textContent = 'Sync Now';
-    btn.onclick = syncWithServer;
+    btn.onclick = syncQuotes;  // Use syncQuotes function
     document.body.appendChild(btn);
 }
 
