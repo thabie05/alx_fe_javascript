@@ -145,18 +145,30 @@ async function fetchQuotesFromServer() {
 
 
 // Sync quotes with the server, adding any new ones
-async function syncWithServer() {
-    const serverQuotes = await fetchQuotesFromServer();
+async function fetchQuotesFromServer() {
+    try {
+        const res = await fetch('https://jsonplaceholder.typicode.com/posts', {
+            method: 'POST', // Changed to POST
+            headers: {
+                'Content-Type': 'application/json' // Added Content-Type header
+            },
+            // If you're sending data in the body of the POST request, include it here:
+            // body: JSON.stringify({ /* Your data here */ }) 
+        });
 
-    serverQuotes.forEach(sq => {
-        if (!quotes.some(q => q.text === sq.text)) {
-            quotes.push(sq);
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
         }
-    });
-    saveQuotes();
-    populateCategories();
-    filterQuotes();
-    alert('Synced with server! New quotes added.');
+
+        const posts = await res.json();
+        return posts.map(post => ({
+            text: post.title,
+            category: 'server'
+        }));
+    } catch (error) {
+        console.error('Error fetching/sending quotes:', error);
+        return [];
+    }
 }
 
 // Create a manual sync button to trigger server synchronization
