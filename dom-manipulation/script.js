@@ -128,20 +128,30 @@ function filterQuotes() {
 // Function to fetch quotes from the server
 async function fetchQuotesFromServer() {
     try {
-        const res = await fetch('https://jsonplaceholder.typicode.com/posts');
+        const res = await fetch('https://jsonplaceholder.typicode.com/posts', {
+            method: 'POST', // Changed to POST
+            headers: {
+                'Content-Type': 'application/json' // Added Content-Type header
+            },
+            // If you're sending data in the body of the POST request, include it here:
+            // body: JSON.stringify({ /* Your data here */ }) 
+        });
+
         if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
+            throw new Error(`HTTP error! status: ${res.status}`);
         }
+
         const posts = await res.json();
         return posts.map(post => ({
             text: post.title,
             category: 'server'
         }));
     } catch (error) {
-        console.error('Error fetching quotes:', error);
-        return []; // Return an empty array in case of error
+        console.error('Error fetching/sending quotes:', error);
+        return [];
     }
 }
+
 
 
 // Sync quotes with the server, adding any new ones
