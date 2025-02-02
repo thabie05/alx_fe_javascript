@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", function () {
   
     function showRandomQuote() {
       if (quotes.length === 0) {
-        quoteDisplay.textContent = "No quotes available.";
+        quoteDisplay.innerHTML = "No quotes available.";
         return;
       }
       const randomIndex = Math.floor(Math.random() * quotes.length);
